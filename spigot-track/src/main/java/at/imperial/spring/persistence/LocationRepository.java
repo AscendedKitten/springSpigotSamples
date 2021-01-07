@@ -2,10 +2,11 @@ package at.imperial.spring.persistence;
 
 
 import at.imperial.spring.domain.PlayerLocationData;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.r2dbc.repository.Query;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Mono;
 
-@Repository
-public interface LocationRepository extends CrudRepository<PlayerLocationData, String> {
-    PlayerLocationData findByName(String name);
+public interface LocationRepository extends ReactiveCrudRepository<PlayerLocationData, String> {
+    @Query("SELECT * FROM PLAYER WHERE playerName = :playerName")
+    Mono<PlayerLocationData> findByName(String playerName);
 }

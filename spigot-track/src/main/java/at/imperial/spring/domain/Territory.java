@@ -21,10 +21,6 @@ public class Territory {
         return occupants.add(uuid);
     }
 
-    public boolean contains(UUID uuid) {
-        return occupants.contains(uuid);
-    }
-
     public boolean removeMember(UUID uuid) {
         return occupants.remove(uuid);
     }

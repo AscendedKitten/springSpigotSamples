@@ -1,26 +1,45 @@
 package at.imperial.spring.domain;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.redis.core.RedisHash;
-import org.springframework.data.redis.core.index.Indexed;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
+import org.springframework.data.relational.core.mapping.Column;
+import org.springframework.data.relational.core.mapping.Table;
 
-import java.io.Serializable;
-
-@RedisHash("PlayerLocation")
 @Data
-@AllArgsConstructor
-public class PlayerLocationData implements Serializable {
+@RequiredArgsConstructor
+@Table("Player")
+public class PlayerLocationData implements Persistable<String> {
 
+    @NonNull
+    @Column("playerName")
     @Id
-    @Indexed
+    private String playerName;
     @NonNull
-    private String name;
-    @NonNull
+    @Column("locX")
     private int locX;
     @NonNull
+    @Column("locZ")
     private int locZ;
 
+    @Transient
+    private boolean isNew;
+
+    @Override
+    @Transient
+    public boolean isNew() {
+        return this.isNew;
+    }
+
+    public PlayerLocationData asNew() {
+        this.isNew = true;
+        return this;
+    }
+
+    public String getId() {
+        return playerName;
+    }
 }
