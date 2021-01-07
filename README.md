@@ -12,7 +12,9 @@
  
  ![Leaving area in-game](https://i.imgur.com/e9yUwso.png)
 
-* Endpoint to query player location stored in-memory using redis; setup for theoretical features
+* Endpoint to query player location stored in-memory using h2; setup for theoretical features
 ![Web endpoint](https://i.imgur.com/mIY4yDb.png)
 
-> Note that the project overhead is rather large right now due to missing exclusion statements in spring dependencies and the embedded redis server included for testing; can be cleaned up for appropriate file size.
+* Implementation of reactive paradigm and functional web framework using handler & routes
+
+> Overhead is still huge, please do not use this in any production environment ever
