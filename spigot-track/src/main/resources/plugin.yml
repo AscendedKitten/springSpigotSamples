@@ -1,0 +1,5 @@
+name: Springot
+version: 1.12.2
+description: Spigot Showcase with Spring Integration
+author: AscendedKitten
+main: at.imperial.spigot.ShowcasePlugin
