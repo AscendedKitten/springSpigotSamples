@@ -1,86 +1,51 @@
 package at.imperial;
 
 
+import at.imperial.pojos.LocationData;
 import net.arikia.dev.drpc.DiscordEventHandlers;
 import net.arikia.dev.drpc.DiscordRPC;
 import net.arikia.dev.drpc.DiscordRichPresence;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.reactive.function.client.WebClient;
 
-import javax.swing.*;
-import java.awt.*;
-import java.util.Scanner;
-
+@SpringBootApplication
 public class SpigotDiscordPresence {
 
+    static final WebClient client = WebClient.create("http://localhost:8080");
 
-    private static boolean ready = false;
-
-    public static void main(String[] args) throws Exception {
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-
-        JFrame frame = new JFrame("Test");
-        JLabel text = new JLabel("Now goto Discord and set your active game to: '" + frame.getTitle() + "'");
-        GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-        int width = gd.getDisplayMode().getWidth();
-        int height = gd.getDisplayMode().getHeight();
-
-        frame.getContentPane().setLayout(new FlowLayout());
-        frame.getContentPane().setBackground(new Color(114, 137, 218));
-        frame.getContentPane().add(text, SwingConstants.CENTER);
-
-        frame.setResizable(true);
-        frame.setSize(width / 4, height / 4);
-        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-
-        frame.setVisible(true);
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Closing Discord hook.");
-            DiscordRPC.discordShutdown();
-        }));
-
+    public static void main(String[] args) {
+        SpringApplication.run(SpigotDiscordPresence.class, args);
+        Runtime.getRuntime().addShutdownHook(new Thread(DiscordRPC::discordShutdown));
         initDiscord();
 
-        int score = 0;
-        System.out.println("Running callbacks...");
+        DiscordRichPresence.Builder presence = new DiscordRichPresence.Builder("");
 
-        while (true) {
-            DiscordRPC.discordRunCallbacks();
+        new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                DiscordRPC.discordRunCallbacks();
+                try {
 
-            if (!ready)
-                continue;
+                    client.get().uri("/players/{name}", "cathKitten")
+                            .retrieve().bodyToMono(LocationData.class)
+                            .subscribe(p -> presence.setDetails(String.format("%d | %d", p.getLocX(), p.getLocZ())));
 
-            System.out.print("> ");
-            Scanner in = new Scanner(System.in);
-            String input = in.nextLine();
-
-            if (!input.equalsIgnoreCase("shutdown")) {
-                if (input.equalsIgnoreCase("test")) {
-                    score++;
-                    DiscordRichPresence.Builder presence = new DiscordRichPresence.Builder("Score: ");
-                    presence.setDetails("Running Test");
                     DiscordRPC.discordUpdatePresence(presence.build());
-                } else {
-                    System.out.println("Unknown Command: " +
-                            "\n\nAvailable Commands:" +
-                            "\ntest - Test.\nshutdown - End this test peacefully.");
+                    Thread.sleep(1000);
+
+                } catch (InterruptedException ignored) {
                 }
-            } else {
-                frame.dispose();
-                System.exit(0);
             }
-        }
+        }).start();
+
     }
 
     private static void initDiscord() {
-        DiscordEventHandlers handlers = new DiscordEventHandlers.Builder().setReadyEventHandler((user) -> {
-            SpigotDiscordPresence.ready = true;
-            System.out.println("Welcome " + user.username + "#" + user.discriminator + ".");
-            DiscordRichPresence.Builder presence = new DiscordRichPresence.Builder("Score: ");
-            presence.setDetails("Running Test");
-            DiscordRPC.discordUpdatePresence(presence.build());
-        }).build();
-        DiscordRPC.discordInitialize("415885161457123338", handlers, false);
-        DiscordRPC.discordRegister("415885161457123338", "");
+        DiscordEventHandlers handlers = new DiscordEventHandlers.Builder()
+                .setReadyEventHandler((user) -> System.out.printf("Found user %s\n", String.join("#", user.username, user.discriminator))).build();
+
+        DiscordRPC.discordInitialize("796721248171851807", handlers, false);
+        DiscordRPC.discordRegister("796721248171851807", "");
     }
 
 }
