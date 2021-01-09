@@ -17,4 +17,7 @@
 
 * Implementation of reactive paradigm and functional web framework using handler & routes
 
+* Sample consumer using discord rich presence, updating in real-time
+![](https://media3.giphy.com/media/qIp6Wjuf9SrlogeLIv/giphy.gif)
+
 > Overhead is still huge, please do not use this in any production environment ever
